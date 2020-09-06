@@ -73,7 +73,7 @@ async function fetchTopLanguages(username) {
     }, {});
 
   const topLangs = Object.keys(repoNodes)
-    .sort((a,b) => repoNode[b].size - repoNodes[a].size)
+    .sort((a,b) => repoNodes[b].size - repoNodes[a].size)
     .slice(0, 5)
     .reduce((result, key) => {
       result[key] = repoNodes[key];
