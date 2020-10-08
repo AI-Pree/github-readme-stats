@@ -1,38 +1,3 @@
-Skip to content
-Search or jump to…
-
-Pull requests
-Issues
-Marketplace
-Explore
- 
-@AI-Pree 
-anuraghazra
-/
-github-readme-stats
-83
-11.4k
-2.2k
-Code
-Issues
-79
-Pull requests
-62
-Actions
-Projects
-Wiki
-Security
-Insights
-github-readme-stats/src/fetchers/top-languages-fetcher.js /
-@Bas950
-Bas950 feat: added "exclude_repo" option to Top Langs (#493)
-…
-Latest commit d4e2a1b 11 days ago
- History
- 4 contributors
-@anuraghazra@Bas950@lrusso96@scitronboy
-104 lines (91 sloc)  2.7 KB
- 
 const { request, logger, clampValue } = require("../common/utils");
 const retryer = require("../common/retryer");
 require("dotenv").config();
@@ -137,15 +102,3 @@ async function fetchTopLanguages(username, langsCount = 5, exclude_repo = []) {
 }
 
 module.exports = fetchTopLanguages;
-© 2020 GitHub, Inc.
-Terms
-Privacy
-Security
-Status
-Help
-Contact GitHub
-Pricing
-API
-Training
-Blog
-About
