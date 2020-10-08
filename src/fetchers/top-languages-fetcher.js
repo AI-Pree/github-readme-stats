@@ -1,4 +1,39 @@
-const { request, logger } = require("../common/utils");
+Skip to content
+Search or jump to…
+
+Pull requests
+Issues
+Marketplace
+Explore
+ 
+@AI-Pree 
+anuraghazra
+/
+github-readme-stats
+83
+11.4k
+2.2k
+Code
+Issues
+79
+Pull requests
+62
+Actions
+Projects
+Wiki
+Security
+Insights
+github-readme-stats/src/fetchers/top-languages-fetcher.js /
+@Bas950
+Bas950 feat: added "exclude_repo" option to Top Langs (#493)
+…
+Latest commit d4e2a1b 11 days ago
+ History
+ 4 contributors
+@anuraghazra@Bas950@lrusso96@scitronboy
+104 lines (91 sloc)  2.7 KB
+ 
+const { request, logger, clampValue } = require("../common/utils");
 const retryer = require("../common/retryer");
 require("dotenv").config();
 
@@ -11,6 +46,7 @@ const fetcher = (variables, token) => {
           # fetch only owner repos & not forks
           repositories(ownerAffiliations: OWNER, isFork: false, first: 100) {
             nodes {
+              name
               languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {
                 edges {
                   size
@@ -29,14 +65,16 @@ const fetcher = (variables, token) => {
     },
     {
       Authorization: `bearer ${token}`,
-    }
+    },
   );
 };
 
-async function fetchTopLanguages(username) {
+async function fetchTopLanguages(username, langsCount = 5, exclude_repo = []) {
   if (!username) throw Error("Invalid username");
 
-  let res = await retryer(fetcher, { login: username });
+  langsCount = clampValue(parseInt(langsCount), 1, 10);
+
+  const res = await retryer(fetcher, { login: username });
 
   if (res.data.errors) {
     logger.error(res.data.errors);
@@ -44,6 +82,22 @@ async function fetchTopLanguages(username) {
   }
 
   let repoNodes = res.data.data.user.repositories.nodes;
+  let repoToHide = {};
+
+  // populate repoToHide map for quick lookup
+  // while filtering out
+  if (exclude_repo) {
+    exclude_repo.forEach((repoName) => {
+      repoToHide[repoName] = true;
+    });
+  }
+
+  // filter out repositories to be hidden
+  repoNodes = repoNodes
+    .sort((a, b) => b.size - a.size)
+    .filter((name) => {
+      return !repoToHide[name.name];
+    });
 
   repoNodes = repoNodes
     .filter((node) => {
@@ -51,7 +105,6 @@ async function fetchTopLanguages(username) {
     })
     // flatten the list of language nodes
     .reduce((acc, curr) => curr.languages.edges.concat(acc), [])
-    .sort((a, b) => b.size - a.size)
     .reduce((acc, prev) => {
       // get the size of the language (bytes)
       let langSize = prev.size;
@@ -73,8 +126,8 @@ async function fetchTopLanguages(username) {
     }, {});
 
   const topLangs = Object.keys(repoNodes)
-    .sort((a,b) => repoNodes[b].size - repoNodes[a].size)
-    .slice(0, 5)
+    .sort((a, b) => repoNodes[b].size - repoNodes[a].size)
+    .slice(0, langsCount)
     .reduce((result, key) => {
       result[key] = repoNodes[key];
       return result;
@@ -84,3 +137,15 @@ async function fetchTopLanguages(username) {
 }
 
 module.exports = fetchTopLanguages;
+© 2020 GitHub, Inc.
+Terms
+Privacy
+Security
+Status
+Help
+Contact GitHub
+Pricing
+API
+Training
+Blog
+About
